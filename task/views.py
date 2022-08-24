@@ -1,9 +1,12 @@
-from urllib import response
+from django.conf import settings
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.views.decorators.cache import cache_page
+
 from celery.result import AsyncResult
+from django.utils.decorators import method_decorator
 
 from .serializers import (
     GetFlightInfoQueryParams,
@@ -13,7 +16,7 @@ from .serializers import (
 from .models import FlightInfo
 from .tasks import scrap_flight_info
 
-# Create your views here.
+CACHE_TTL = getattr(settings, 'CACHE_TTL')
 
 
 class ScrapView(APIView):
@@ -33,6 +36,7 @@ class ScrapView(APIView):
 
 
 class InfoView(APIView):
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
         query_params = request.GET.dict()
         query_params = GetFlightInfoQueryParams(data=query_params)
