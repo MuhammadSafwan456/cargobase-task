@@ -3,11 +3,18 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from celery.result import AsyncResult
 
-from .serializers import GetFlightInfoQueryParams, FlightInfoSerializer, ScrapDataQueryParams
+from .serializers import (
+    GetFlightInfoQueryParams,
+    FlightInfoSerializer,
+    ScrapDataQueryParams,
+)
 from .models import FlightInfo
 from .tasks import scrap_flight_info
+
 # Create your views here.
+
 
 class ScrapView(APIView):
     def get(self, request):
@@ -15,15 +22,14 @@ class ScrapView(APIView):
         query_params = ScrapDataQueryParams(data=query_params)
         if not query_params.is_valid():
             return Response(query_params.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         query_params = query_params.data
-        airline = query_params.get('airline')
-        flight_number = query_params.get('flight_number')
-        date = query_params.get('date')
-        print("airline: {}, flight_number: {}, date: {}".format(airline, flight_number, date))
+        airline = query_params.get("airline")
+        flight_number = query_params.get("flight_number")
+        date = query_params.get("date")
+        
         task = scrap_flight_info.delay(airline, flight_number, date)
-        print(task)
-        return Response("scraped_data", status=status.HTTP_200_OK)
+        return Response(task.task_id, status=status.HTTP_200_OK)
 
 
 class InfoView(APIView):
@@ -34,9 +40,9 @@ class InfoView(APIView):
             return Response(query_params.errors, status=status.HTTP_400_BAD_REQUEST)
 
         query_params = query_params.data
-        airline = query_params.get('airline', None)
-        flight_number = query_params.get('flight_number', None)
-        date = query_params.get('date', None)
+        airline = query_params.get("airline", None)
+        flight_number = query_params.get("flight_number", None)
+        date = query_params.get("date", None)
 
         query_set = FlightInfo.objects.all()
         if airline:
@@ -47,3 +53,10 @@ class InfoView(APIView):
             query_set = query_set.filter(date=date)
         query_set = FlightInfoSerializer(query_set, many=True)
         return Response(query_set.data, status=status.HTTP_200_OK)
+
+
+class StatusView(APIView):
+    def get(self, request, *args, **kwargs):
+        task_id = str(kwargs.get("task_id"))
+        _status = AsyncResult(task_id).state
+        return Response(_status, status=status.HTTP_200_OK)

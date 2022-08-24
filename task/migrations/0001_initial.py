@@ -7,18 +7,25 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FlightInfo',
+            name="FlightInfo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('airline', models.CharField(max_length=10)),
-                ('flight_number', models.CharField(max_length=10)),
-                ('date', models.DateField()),
-                ('info', models.JSONField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("airline", models.CharField(max_length=10)),
+                ("flight_number", models.CharField(max_length=10)),
+                ("date", models.DateField()),
+                ("info", models.JSONField()),
             ],
         ),
     ]

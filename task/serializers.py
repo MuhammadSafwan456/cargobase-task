@@ -11,10 +11,11 @@ class FlightInfoSerializer(serializers.ModelSerializer):
 
 class GetFlightInfoQueryParams(serializers.Serializer):
     airline = serializers.CharField(max_length=10, required=False)
-    flight_number = serializers.CharField(max_length=10,required=False)
+    flight_number = serializers.CharField(max_length=10, required=False)
     date = serializers.DateField(required=False)
+
 
 class ScrapDataQueryParams(serializers.Serializer):
     airline = serializers.CharField(max_length=10, required=True)
-    flight_number = serializers.CharField(max_length=10,required=True)
+    flight_number = serializers.CharField(max_length=10, required=True)
     date = serializers.DateField(required=True)
